@@ -439,43 +439,55 @@
             
             .browse-search-inner {
                 flex-direction: row;
-                gap: 8px;
-                padding: 12px 16px;
-                border-radius: 16px;
-                box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+                gap: 12px;
+                padding: 14px 18px;
+                border-radius: 20px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
                 align-items: center;
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                border: 2px solid rgba(59, 130, 246, 0.1);
+                transition: all 0.3s ease;
+            }
+            
+            .browse-search-inner:focus-within {
+                border-color: rgba(59, 130, 246, 0.3);
+                box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
+                transform: translateY(-2px);
             }
             
             .browse-search-inner i {
-                font-size: 1rem;
+                font-size: 1.1rem;
                 color: #3b82f6;
                 flex-shrink: 0;
             }
             
             .browse-search-inner input {
                 flex: 1;
-                padding: 10px 12px;
-                border-radius: 10px;
-                background: rgba(248, 250, 252, 0.8);
-                border: 1px solid rgba(59, 130, 246, 0.1);
-                font-size: 0.95rem;
+                padding: 12px 16px;
+                border-radius: 12px;
+                background: rgba(248, 250, 252, 0.9);
+                border: 1px solid rgba(59, 130, 246, 0.15);
+                font-size: 1rem;
                 font-weight: 500;
                 transition: all 0.3s ease;
+                color: #1f2937;
             }
             
             .browse-search-inner input:focus {
                 background: white;
-                border-color: rgba(59, 130, 246, 0.3);
-                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+                border-color: rgba(59, 130, 246, 0.4);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                outline: none;
+            }
+            
+            .browse-search-inner input::placeholder {
+                color: #9ca3af;
+                font-weight: 400;
             }
             
             .browse-search-inner button {
-                padding: 10px 16px;
-                border-radius: 10px;
-                font-size: 0.85rem;
-                font-weight: 600;
-                white-space: nowrap;
-                flex-shrink: 0;
+                display: none; /* Hide clear button on mobile */
             }
         }
         
