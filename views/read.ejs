@@ -272,20 +272,29 @@
         }
         
         @media (max-width: 480px) {
+            .pdf-grid {
+                padding: 0 1rem;
+            }
+            
             .pdf-card {
-                max-width: 100%;
-                margin: 0 0 12px;
-                min-height: 200px;
+                max-width: 280px;
+                margin: 0 auto 12px;
+                min-height: 280px;
                 padding: 0.75rem;
-                border-radius: 10px;
+                border-radius: 12px;
                 box-shadow: 0 3px 15px rgba(0,0,0,0.06);
+                aspect-ratio: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
             }
             
             .thumb-wrap {
-                height: 100px;
-                min-height: 100px;
-                margin-bottom: 6px;
-                border-radius: 6px;
+                height: 120px;
+                min-height: 120px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+                aspect-ratio: 4/3;
             }
             
             .pdf-card h3 {
@@ -293,11 +302,13 @@
                 margin: 0.3rem 0;
                 line-height: 1.2;
                 font-weight: 600;
+                text-align: center;
             }
             
             .pdf-meta {
                 margin: 0.25rem 0;
                 gap: 4px;
+                justify-content: center;
             }
             
             .chip {
@@ -308,9 +319,11 @@
             .pdf-actions {
                 gap: 0.3rem;
                 margin-top: auto;
+                flex-direction: row;
             }
             
             .pdf-actions .btn {
+                flex: 1;
                 font-size: 0.7rem;
                 padding: 0.4rem 0.5rem;
                 min-height: 32px;
