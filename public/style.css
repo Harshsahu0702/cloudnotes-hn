@@ -62,7 +62,7 @@ body {
 .nav-logo {
     display: flex;
     align-items: center;
-    gap: clamp(3px, 0.8vw, 6px);
+    gap: clamp(2px, 0.5vw, 4px);
     cursor: pointer;
     transition: transform 0.3s ease;
 }
@@ -1333,7 +1333,7 @@ body {
 }
 /* Desktop */
 .logo-primary {
-    padding-left: 30px;
+    padding-left: 8px;
     height: 43px;
     font-size: 30px;
   }
@@ -1482,18 +1482,30 @@ body {
     
     .pdf-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
-        padding: 0 0.5rem;
+        gap: 1.5rem;
+        padding: 0 1rem;
         max-width: 400px;
+    }
+    
+    .pdf-card {
+        max-width: 350px;
+        padding: 1.25rem;
+    }
+    
+    .pdf-card h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
     }
     
     .pdf-actions {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
     
     .pdf-actions .btn {
         width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
     }
 }
 
@@ -1868,23 +1880,34 @@ img {
         }
         
     #searchClear {
-        margin-left: -50px;
+        margin-left: -45px;
         flex-shrink: 0;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
         z-index: 10;
         position: relative;
         background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-        border-radius: 20px;
-        min-width: 60px;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 25px;
+        min-width: 70px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
     #searchInput {
         flex: 1;
-        padding: 0.75rem 3rem 0.75rem 0.75rem;
-        font-size: 0.9rem;
-        background: transparent;
+        padding: 0.8rem 4rem 0.8rem 1rem;
+        font-size: 0.95rem;
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        border-radius: 25px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    #searchInput:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
     
     .browse-search-inner {
