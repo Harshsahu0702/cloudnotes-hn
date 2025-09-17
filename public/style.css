@@ -1344,7 +1344,7 @@ body {
 /* Extra Small Devices (phones, 320px and up) */
 @media (max-width: 480px) {
     .nav-container {
-        height: 100px;
+        height: 60px;
         padding: 0 1rem;
         flex-wrap: nowrap;
         gap: 0.5rem;
@@ -1389,7 +1389,7 @@ body {
         text-overflow: ellipsis;
         max-width: 120px;
         line-height: 1.1;
-        margin-top: 1px;
+        margin-top: 10px;
     }
     
     .logo-text {
