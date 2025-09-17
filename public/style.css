@@ -1383,13 +1383,13 @@ body {
     }
     
     .logo-primary, .logo-secondary {
-        font-size: 1.1rem;
+        font-size: 1rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 120px;
-        line-height: 1.2;
-        margin-top: 2px;
+        line-height: 1.1;
+        margin-top: 1px;
     }
     
     .logo-text {
@@ -1397,7 +1397,7 @@ body {
         flex: 1;
         display: flex;
         align-items: flex-start;
-        padding-top: 2px;
+        padding-top: 1px;
     }
     
     .nav-menu {
