@@ -25,9 +25,31 @@ const noteRoutes = require('./routes/noteRoutes');
 // Initialize Express app
 const app = express();
 
-// ======================
-// Configuration
-// ======================
+// Trust the first proxy (Vercel/Render/NGINX) so secure cookies work
+app.set('trust proxy', 1);
+
+// Basic, dependency-free CORS middleware with credentials support
+// Configure allowed frontend origins via CORS_ORIGIN or FRONTEND_ORIGIN (comma-separated)
+const isProd = process.env.NODE_ENV === 'production';
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || process.env.FRONTEND_ORIGIN || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.length && ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+  }
+  next();
+});
 
 // Cloudinary Configuration
 cloudinary.config({
@@ -98,8 +120,12 @@ app.use(session({
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    // Secure cookies in production; requires trust proxy on platforms like Vercel/Render
+    secure: isProd,
+    // Use SameSite=None for cross-domain setups so cookies are accepted by browsers
+    sameSite: (ALLOWED_ORIGINS && ALLOWED_ORIGINS.length) ? 'none' : 'lax',
+    // Optionally scope cookie to a parent domain (e.g., .example.com)
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {})
   }
 }));
 
@@ -201,8 +227,14 @@ app.get('/login', (req, res) => res.render('login'));
 
 // Logout
 app.post('/logout', (req, res) => {
+  const cookieOpts = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: (ALLOWED_ORIGINS && ALLOWED_ORIGINS.length) ? 'none' : 'lax',
+    ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {})
+  };
   req.session.destroy(() => {
-    res.clearCookie('connect.sid');
+    res.clearCookie('connect.sid', cookieOpts);
     res.redirect('/');
   });
 });
