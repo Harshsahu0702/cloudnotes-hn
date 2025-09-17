@@ -1382,15 +1382,18 @@ body {
         object-fit: contain;
     }
     
-    .logo-primary, .logo-secondary {
-        font-size: 1rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 120px;
-        line-height: 1.1;
-        margin-top: 10px;
-    }
+   .logo-primary, .logo-secondary {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    line-height: 1.1;
+    margin-top: 10px;
+    position: relative;
+    top: 3px; /* value adjust karo jaise niche chahiye */
+}
+
     
     .logo-text {
         min-width: 0;
