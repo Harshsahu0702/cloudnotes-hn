@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Notes - Cloud Notes</title>
     <link rel="stylesheet" href="/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,22 +20,15 @@
         .thumb-wrap {
             position: relative;
             overflow: hidden;
-            border-radius: 12px;
+            border-radius: 16px;
             margin-bottom: 1rem;
             box-shadow: 0 10px 24px rgba(0,0,0,0.15);
             background: #0f172a;
-            width: 100%;
-            aspect-ratio: 4/3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .thumb-canvas {
             display: block;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
+            height: auto;
             transform: scale(1.02);
             transition: transform 0.35s ease;
         }
@@ -123,102 +116,19 @@
         .pdf-list-container { width: min(1400px, 100% - 96px); margin-left: auto; margin-right: auto; padding-left: 0; padding-right: 0; }
 
         /* Search bar styling */
-        .browse-search { 
-            display:flex; 
-            justify-content:center; 
-            margin: 16px 0 24px; 
-            padding: 0 1rem;
-        }
+        .browse-search { display:flex; justify-content:center; margin: 16px 0 24px; }
         .browse-search-inner {
-            display:flex; 
-            align-items:center; 
-            gap:8px; 
-            padding: 12px 16px; 
-            border-radius: 999px;
-            background: rgba(255,255,255,0.95); 
-            backdrop-filter: blur(10px); 
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            display:flex; align-items:center; gap:12px; padding: 14px 14px; border-radius: 999px;
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(10px); box-shadow: 0 6px 20px rgba(0,0,0,0.12);
             width: min(760px, 100%);
-            position: relative;
-            border: 1px solid rgba(59, 130, 246, 0.1);
         }
-        .browse-search-inner i { 
-            color:#6b7280; 
-            flex-shrink: 0;
-        }
-        .browse-search-inner input { 
-            flex:1; 
-            border:none; 
-            outline:none; 
-            background: transparent; 
-            font-size: 0.95rem; 
-            color:#111827;
-            padding-right: 0.5rem;
-        }
-        .browse-search-inner button {
-            flex-shrink: 0;
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            border-radius: 20px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .browse-search-inner button:hover {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            transform: translateY(-1px);
-        }
+        .browse-search-inner i { color:#6b7280; }
+        .browse-search-inner input { flex:1; border:none; outline:none; background: transparent; font-size: 0.95rem; color:#111827; }
         @media (max-width: 768px) {
             .pdf-meta {
                 flex-direction: column;
                 gap: 0.5rem;
                 align-items: flex-start;
-            }
-            
-            .browse-search {
-                padding: 0 0.5rem;
-            }
-            
-            .browse-search-inner {
-                padding: 10px 12px;
-                gap: 6px;
-            }
-            
-            .browse-search-inner button {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-            }
-            
-            .browse-search-inner input {
-                font-size: 0.9rem;
-                padding-right: 0.25rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .browse-search-inner {
-                flex-direction: column;
-                gap: 8px;
-                padding: 12px;
-                border-radius: 16px;
-            }
-            
-            .browse-search-inner input {
-                width: 100%;
-                padding: 0.75rem;
-                border-radius: 12px;
-                background: rgba(255, 255, 255, 0.9);
-                border: 1px solid rgba(59, 130, 246, 0.2);
-            }
-            
-            .browse-search-inner button {
-                width: 100%;
-                padding: 0.75rem;
-                border-radius: 12px;
-                font-size: 0.9rem;
             }
         }
         
@@ -275,7 +185,7 @@
         <div class="nav-container">
             <div class="nav-logo">
                 <div class="logo-icon">
-                <img src="logo1.png" alt="CloudNotes Logo">
+                <img src="logo1.png" alt="CloudNotes Logo" style="height: 120px;">
             </div>
                 <div class="logo-text">
                     <span class="logo-primary"  >Cloud Notes</span>
@@ -401,10 +311,10 @@
 
             showModal('Preview', container, [
                 { label: 'Close', variant: 'primary' },
-                { label: 'Open Full Page', variant: 'secondary', onClick: () => window.location.href = `/view/${id}` }
+                { label: 'Open Full Page', variant: 'secondary', onClick: () => window.location.href = /view/${id} }
             ]);
 
-            const url = `/download/${id}`;
+            const url = /download/${id};
             fetch(url)
                 .then(res => {
                     if (!res.ok) throw new Error('Failed to fetch');
@@ -439,7 +349,7 @@
         }
         
         function downloadPDF(id) {
-            window.location.href = `/download/${id}`;
+            window.location.href = /download/${id};
         }
         
         // Render thumbnails for cards (first page preview)
@@ -447,7 +357,7 @@
             const canvases = document.querySelectorAll('.thumb-canvas');
             canvases.forEach((canvas) => {
                 const id = canvas.getAttribute('data-id');
-                const url = `/download/${id}`;
+                const url = /download/${id};
                 fetch(url)
                   .then(res => { if(!res.ok) throw new Error('Failed'); return res.arrayBuffer(); })
                   .then(data => pdfjsLib.getDocument({ data }).promise)
