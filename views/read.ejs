@@ -123,8 +123,8 @@
         }
         @media (max-width: 768px) {
             .pdf-grid { 
-                grid-template-columns: 1fr; 
-                gap: 20px;
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 16px;
                 padding: 0 1rem;
                 max-width: 100%;
                 margin: 0;
@@ -133,15 +133,15 @@
         @media (max-width: 640px) {
             .pdf-grid { 
                 grid-template-columns: 1fr; 
-                gap: 16px;
+                gap: 14px;
                 padding: 0 0.75rem;
             }
         }
         @media (max-width: 480px) {
             .pdf-grid { 
                 grid-template-columns: 1fr; 
-                gap: 12px;
-                padding: 0 0.5rem;
+                gap: 10px;
+                padding: 0 0.75rem;
             }
         }
 
@@ -213,88 +213,109 @@
         /* Mobile-specific card improvements */
         @media (max-width: 768px) {
             .pdf-card {
-                padding: 1rem;
-                max-width: 350px;
+                padding: 0.875rem;
+                max-width: 280px;
                 margin: 0 auto;
-                border-radius: 16px;
+                border-radius: 12px;
                 aspect-ratio: auto;
-                min-height: 320px;
+                min-height: 240px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             }
             
             .thumb-wrap {
-                height: 160px;
-                min-height: 160px;
-                margin-bottom: 8px;
+                height: 120px;
+                min-height: 120px;
+                margin-bottom: 6px;
+                border-radius: 8px;
             }
             
             .pdf-card h3 {
-                font-size: 0.95rem;
-                margin: 0.5rem 0;
+                font-size: 0.85rem;
+                margin: 0.4rem 0;
                 text-align: center;
                 flex-shrink: 0;
+                line-height: 1.3;
+                font-weight: 600;
             }
             
             .pdf-meta {
                 justify-content: center;
-                margin: 0.5rem 0;
+                margin: 0.3rem 0;
                 flex-shrink: 0;
+                gap: 6px;
+            }
+            
+            .chip {
+                font-size: 0.7rem;
+                padding: 2px 6px;
             }
             
             .pdf-actions {
                 flex-direction: row;
-                gap: 0.5rem;
+                gap: 0.4rem;
                 margin-top: auto;
                 flex-shrink: 0;
             }
             
             .pdf-actions .btn {
                 flex: 1;
-                padding: 0.6rem 0.8rem;
-                font-size: 0.8rem;
-                min-height: 40px;
+                padding: 0.5rem 0.6rem;
+                font-size: 0.75rem;
+                min-height: 36px;
                 justify-content: center;
+                border-radius: 6px;
+                font-weight: 600;
             }
         }
         
         @media (max-width: 480px) {
             .pdf-card {
                 max-width: 100%;
-                margin: 0 0 16px;
-                min-height: 300px;
-                padding: 0.875rem;
+                margin: 0 0 12px;
+                min-height: 200px;
+                padding: 0.75rem;
+                border-radius: 10px;
+                box-shadow: 0 3px 15px rgba(0,0,0,0.06);
             }
             
             .thumb-wrap {
-                height: 150px;
-                min-height: 150px;
-                margin-bottom: 8px;
+                height: 100px;
+                min-height: 100px;
+                margin-bottom: 6px;
+                border-radius: 6px;
             }
             
             .pdf-card h3 {
-                font-size: 0.9rem;
-                margin: 0.4rem 0;
+                font-size: 0.8rem;
+                margin: 0.3rem 0;
+                line-height: 1.2;
+                font-weight: 600;
             }
             
             .pdf-meta {
-                margin: 0.4rem 0;
+                margin: 0.25rem 0;
+                gap: 4px;
             }
             
             .chip {
-                font-size: 0.75rem;
-                padding: 3px 6px;
+                font-size: 0.65rem;
+                padding: 2px 5px;
             }
             
             .pdf-actions {
-                gap: 0.4rem;
+                gap: 0.3rem;
+                margin-top: auto;
             }
             
             .pdf-actions .btn {
-                font-size: 0.75rem;
-                padding: 0.5rem 0.6rem;
-                min-height: 38px;
+                font-size: 0.7rem;
+                padding: 0.4rem 0.5rem;
+                min-height: 32px;
+                border-radius: 5px;
+                font-weight: 600;
             }
         }
 
@@ -724,7 +745,15 @@
                   .then(page => {
                       // Responsive width based on screen size
                       const isMobile = window.innerWidth <= 768;
-                      const desiredWidth = isMobile ? 280 : 320;
+                      const isSmallMobile = window.innerWidth <= 480;
+                      let desiredWidth;
+                      if (isSmallMobile) {
+                          desiredWidth = 200;
+                      } else if (isMobile) {
+                          desiredWidth = 240;
+                      } else {
+                          desiredWidth = 320;
+                      }
                       const viewport1x = page.getViewport({ scale: 1 });
                       const scale = desiredWidth / viewport1x.width;
                       const viewport = page.getViewport({ scale });
@@ -736,10 +765,11 @@
                       const offCtx = off.getContext('2d');
                       page.render({ canvasContext: offCtx, viewport }).promise.then(() => {
                           const ctx = canvas.getContext('2d');
-                          // Show 60% of the page height for good balance
+                          // Show more content for smaller previews
+                          const heightRatio = isSmallMobile ? 0.7 : (isMobile ? 0.65 : 0.6);
                           canvas.width = viewport.width;
-                          canvas.height = Math.floor(viewport.height * 0.6);
-                          ctx.drawImage(off, 0, 0, off.width, off.height * 0.6, 0, 0, canvas.width, canvas.height);
+                          canvas.height = Math.floor(viewport.height * heightRatio);
+                          ctx.drawImage(off, 0, 0, off.width, off.height * heightRatio, 0, 0, canvas.width, canvas.height);
                       });
                   })
                   .catch(() => {
