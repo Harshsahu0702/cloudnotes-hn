@@ -29,6 +29,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 200px;
         }
         .thumb-canvas {
             display: block;
@@ -46,6 +47,27 @@
             padding: 48px 16px;
             color: #94a3b8;
             text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        /* Mobile thumbnail improvements */
+        @media (max-width: 768px) {
+            .thumb-wrap {
+                height: 200px;
+                min-height: 200px;
+                aspect-ratio: 4/3;
+            }
+            
+            .thumb-canvas {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .thumb-fallback {
+                padding: 32px 12px;
+                font-size: 0.85rem;
+            }
         }
         
         .pdf-meta { display:flex; justify-content:center; gap: 10px; margin: 10px 0 14px; }
@@ -94,10 +116,26 @@
             gap: 36px;
         }
         @media (max-width: 1024px) {
-            .pdf-grid { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+            .pdf-grid { 
+                grid-template-columns: repeat(2, minmax(240px, 1fr)); 
+                gap: 24px;
+            }
+        }
+        @media (max-width: 768px) {
+            .pdf-grid { 
+                grid-template-columns: 1fr; 
+                gap: 20px;
+                padding: 0 1rem;
+                max-width: 400px;
+                margin: 0 auto;
+            }
         }
         @media (max-width: 640px) {
-            .pdf-grid { grid-template-columns: 1fr; }
+            .pdf-grid { 
+                grid-template-columns: 1fr; 
+                gap: 16px;
+                padding: 0 0.5rem;
+            }
         }
 
         /* Professional card styling */
@@ -109,15 +147,64 @@
             border: 1px solid rgba(15, 23, 42, 0.06);
             transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
             text-align: center;
+            max-width: 100%;
+            margin: 0 auto;
         }
         .pdf-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 16px 32px rgba(0,0,0,0.14);
             border-color: rgba(59,130,246,0.25);
         }
-        .pdf-card h3 { margin: 8px 0 6px; color:#0f172a; font-weight: 700; font-size: 1.05rem; }
-        .pdf-meta { justify-content:center; gap: 10px; }
-        .pdf-actions { display:flex; justify-content:center; gap: .75rem; }
+        .pdf-card h3 { 
+            margin: 8px 0 6px; 
+            color:#0f172a; 
+            font-weight: 700; 
+            font-size: 1.05rem; 
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+        .pdf-meta { 
+            justify-content:center; 
+            gap: 10px; 
+            flex-wrap: wrap;
+        }
+        .pdf-actions { 
+            display:flex; 
+            justify-content:center; 
+            gap: .75rem; 
+            flex-wrap: wrap;
+        }
+        
+        /* Mobile-specific card improvements */
+        @media (max-width: 768px) {
+            .pdf-card {
+                padding: 1.25rem;
+                max-width: 350px;
+                margin: 0 auto;
+            }
+            
+            .pdf-card h3 {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .pdf-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+            }
+            
+            .pdf-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .pdf-actions .btn {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                font-size: 0.85rem;
+            }
+        }
 
         /* Center contents with generous side padding and max width */
         .pdf-list-container { width: min(1400px, 100% - 96px); margin-left: auto; margin-right: auto; padding-left: 0; padding-right: 0; }
@@ -453,10 +540,13 @@
                   .then(data => pdfjsLib.getDocument({ data }).promise)
                   .then(pdf => pdf.getPage(1))
                   .then(page => {
-                      const desiredWidth = 320;
+                      // Responsive width based on screen size
+                      const isMobile = window.innerWidth <= 768;
+                      const desiredWidth = isMobile ? 280 : 320;
                       const viewport1x = page.getViewport({ scale: 1 });
                       const scale = desiredWidth / viewport1x.width;
                       const viewport = page.getViewport({ scale });
+                      
                       // Render full page to offscreen, then copy top half to visible canvas
                       const off = document.createElement('canvas');
                       off.width = viewport.width;
