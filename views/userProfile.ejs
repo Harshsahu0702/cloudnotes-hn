@@ -334,6 +334,36 @@
                     border-radius: 999px;
                     font-size: 0.85rem;
                 }
+                
+                @media (max-width: 480px) {
+                    .pdf-grid {
+                        grid-template-columns: 1fr;
+                        gap: 1.5rem;
+                        padding: 0 1rem;
+                        max-width: 400px;
+                    }
+                    
+                    .pdf-card {
+                        max-width: 350px;
+                        padding: 1.25rem;
+                    }
+                    
+                    .pdf-card h3 {
+                        font-size: 1rem;
+                        margin-bottom: 1rem;
+                    }
+                    
+                    .pdf-actions {
+                        flex-direction: column;
+                        gap: 0.75rem;
+                    }
+                    
+                    .pdf-actions .btn {
+                        width: 100%;
+                        padding: 0.75rem 1rem;
+                        font-size: 0.85rem;
+                    }
+                }
             </style>
             <div class="pdf-grid">
                 <% notes.forEach(function(note){ %>
