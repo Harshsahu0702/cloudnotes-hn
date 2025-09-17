@@ -1388,13 +1388,16 @@ body {
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 120px;
+        line-height: 1.2;
+        margin-top: 2px;
     }
     
     .logo-text {
         min-width: 0;
         flex: 1;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        padding-top: 2px;
     }
     
     .nav-menu {
