@@ -1344,7 +1344,7 @@ body {
 /* Extra Small Devices (phones, 320px and up) */
 @media (max-width: 480px) {
     .nav-container {
-        height: 50px;
+        height: 100px;
         padding: 0 1rem;
         flex-wrap: nowrap;
         gap: 0.5rem;
