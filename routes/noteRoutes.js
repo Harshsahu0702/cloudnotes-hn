@@ -97,6 +97,30 @@ router.post('/upload',
   })
 );
 
+// Create a note by saving metadata after client-direct Cloudinary upload
+router.post('/create', 
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { title, fileUrl, fileType } = req.body || {};
+
+    if (!fileUrl || typeof fileUrl !== 'string') {
+      return apiResponse(res, { success: false, status: 400, message: 'fileUrl is required' });
+    }
+
+    const note = new Note({
+      title: title && String(title).trim() ? String(title).trim() : 'Untitled',
+      fileUrl,
+      fileType: fileType || 'application/pdf',
+      uploader: req.session.user.id,
+      uploaderName: req.session.user.name || req.session.user.username,
+    });
+
+    await note.save();
+
+    return apiResponse(res, { status: 201, message: 'Note saved', data: note });
+  })
+);
+
 // Delete a note
 router.delete('/:id',
   requireAuth,

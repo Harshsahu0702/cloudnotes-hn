@@ -1333,7 +1333,14 @@ body {
     .pdf-actions { flex-direction: column; }
 
 }
-
+.btn-row{
+    justify-content: center;
+    width: 200px;        /* required width */
+    height: 115px;        /* required height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 @media (max-width: 480px) {
     .hero-title { font-size: 2rem; }
     .hero-subtitle { font-size: 1.1rem; }

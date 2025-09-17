@@ -488,6 +488,42 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// Generate Cloudinary signature for direct client upload
+app.post('/api/cloudinary/signature', requireAuth, (req, res) => {
+  try {
+    const filename = (req.body && req.body.filename ? String(req.body.filename) : 'file').trim();
+    const timestamp = Math.round(Date.now() / 1000);
+    const folder = 'pdf_uploads';
+    const public_id = `${Date.now()}-${filename.replace(/\s+/g, '_')}`;
+
+    const paramsToSign = {
+      timestamp,
+      folder,
+      public_id,
+      resource_type: 'raw',
+    };
+
+    const signature = cloudinary.utils.api_sign_request(
+      paramsToSign,
+      process.env.CLOUDINARY_API_SECRET
+    );
+
+    return res.json({
+      success: true,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.CLOUDINARY_API_KEY,
+      timestamp,
+      signature,
+      folder,
+      public_id,
+      resource_type: 'raw'
+    });
+  } catch (err) {
+    console.error('Signature generation error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to generate signature' });
+  }
+});
+
 app.post('/upload', requireAuth, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });

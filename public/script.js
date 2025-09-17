@@ -194,7 +194,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         name: name,
                         username: email,
                         password: password
-                    })
+                    }),
+                    credentials: 'include'
                 });
 
                 if (response.ok) {
@@ -242,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fd = new FormData(loginForm);
         const body = new URLSearchParams();
         for (const [k, v] of fd.entries()) body.append(k, v);
-        fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body })
+        fetch('/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body, credentials: 'include' })
           .then(async (res) => {
             const txt = await res.text();
             if (!res.ok) throw new Error(txt || 'Login failed');
@@ -264,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!email) return showNotification('Enter your email', 'warning');
         resetSendBtn.disabled = true; resetSendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
         try {
-            const r = await fetch('/api/password-reset/send-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+            const r = await fetch('/api/password-reset/send-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }), credentials: 'include' });
             const d = await r.json(); if (!r.ok) throw new Error(d.message||'Failed');
             resetEmail = email; resetFormEmail.style.display = 'none'; resetFormVerify.style.display = '';
             resetResendBtn.disabled = true; resetTimeLeft = 120; updateResetTimer(); resetTimerInterval = setInterval(updateResetTimer, 1000);
@@ -312,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!resetEmail) return;
         resetResendBtn.disabled = true;
         try {
-            const r = await fetch('/api/password-reset/send-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: resetEmail }) });
+            const r = await fetch('/api/password-reset/send-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: resetEmail }), credentials: 'include' });
             const d = await r.json(); if (!r.ok) throw new Error(d.message||'Failed');
             resetTimeLeft = 120; updateResetTimer(); clearInterval(resetTimerInterval); resetTimerInterval = setInterval(updateResetTimer, 1000);
             showNotification('Code resent', 'success');
@@ -326,7 +327,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (digits.length !== 6) return showNotification('Enter 6-digit code', 'warning');
         resetVerifyBtn.disabled = true; resetVerifyBtn.textContent = 'Verifying...';
         try {
-            const r = await fetch('/api/password-reset/verify-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: resetEmail, otp: digits }) });
+            const r = await fetch('/api/password-reset/verify-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: resetEmail, otp: digits }), credentials: 'include' });
             const d = await r.json(); if (!r.ok) throw new Error(d.message||'Failed');
             resetFormVerify.style.display = 'none'; resetFormPassword.style.display = '';
             showNotification('Code verified. Set a new password.', 'success');
@@ -342,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const otpDigits = Array.from(document.querySelectorAll('#resetFormVerify .otp-input')).map(i=>i.value).join('');
         const btn = document.getElementById('resetConfirmBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
         try {
-            const r = await fetch('/api/password-reset/confirm', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: resetEmail, otp: otpDigits, newPassword: pass }) });
+            const r = await fetch('/api/password-reset/confirm', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: resetEmail, otp: otpDigits, newPassword: pass }), credentials: 'include' });
             const d = await r.json(); if (!r.ok) throw new Error(d.message||'Failed');
             showNotification('Password updated. Please sign in.', 'success');
             resetModal.classList.remove('show'); setTimeout(()=>{ resetModal.style.display='none'; },200);
@@ -475,7 +476,8 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch('/upload', {
                 method: 'POST',
                 headers: { 'Accept': 'application/json' },
-                body: formData
+                body: formData,
+                credentials: 'include'
             })
             .then(async (res) => {
                 const data = await res.json().catch(() => ({}));
