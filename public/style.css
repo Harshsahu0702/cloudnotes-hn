@@ -1253,6 +1253,7 @@ body {
 @media (max-width: 768px) {
     .pdf-list-section {
         background: url('/sec1.jpg') center/cover no-repeat fixed !important;
+        height: 100vh;
     }
 }
 
