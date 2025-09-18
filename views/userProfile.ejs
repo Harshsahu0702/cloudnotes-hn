@@ -369,7 +369,7 @@
                 <% notes.forEach(function(note){ %>
                     <div class="pdf-card">
                         <div class="thumb-wrap">
-                            <img class="thumb-canvas" src="<%= note.thumbnailUrl || '/img/pdf-placeholder.png' %>" alt="PDF thumbnail" loading="lazy" />
+                            <canvas class="thumb-canvas" data-id="<%= note._id %>"></canvas>
                         </div>
                         <h3><%= note.title %></h3>
                         <div class="pdf-meta">

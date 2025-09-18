@@ -148,7 +148,7 @@
                             <% notes.forEach(n => { %>
                                 <div class="upload-card">
                                     <div class="thumb-wrap">
-                                        <img class="thumb-canvas" src="<%= n.thumbnailUrl || '/img/pdf-placeholder.png' %>" alt="PDF thumbnail" loading="lazy" />
+                                        <canvas class="thumb-canvas" data-id="<%= n._id %>"></canvas>
                                     </div>
                                     <div class="upload-meta"><span><i class="fas fa-file-pdf"></i> PDF</span><span><i class="fas fa-calendar"></i> <%= new Date(n.uploadedAt).toLocaleDateString() %></span></div>
                                     <h4><%= n.title %></h4>
@@ -208,7 +208,39 @@
               .catch(err => showToast(err.message||'Delete failed','error'));
         });
 
-        // Thumbnails are pre-rendered images (server-side). No client PDF fetching here.
+        // Render half-page preview thumbnails
+        document.addEventListener('DOMContentLoaded', function(){
+            const canvases = document.querySelectorAll('.thumb-canvas');
+            canvases.forEach((canvas) => {
+                const id = canvas.getAttribute('data-id');
+                if (!id) return;
+                const url = `/download/${id}`;
+                fetch(url)
+                  .then(res => { if(!res.ok) throw new Error('Failed'); return res.arrayBuffer(); })
+                  .then(data => pdfjsLib.getDocument({ data }).promise)
+                  .then(pdf => pdf.getPage(1))
+                  .then(page => {
+                      const desiredWidth = 320;
+                      const viewport1x = page.getViewport({ scale: 1 });
+                      const scale = desiredWidth / viewport1x.width;
+                      const viewport = page.getViewport({ scale });
+                      const off = document.createElement('canvas');
+                      off.width = viewport.width;
+                      off.height = viewport.height;
+                      const offCtx = off.getContext('2d');
+                      page.render({ canvasContext: offCtx, viewport }).promise.then(() => {
+                          const ctx = canvas.getContext('2d');
+                          canvas.width = viewport.width;
+                          canvas.height = Math.floor(viewport.height / 2);
+                          ctx.drawImage(off, 0, 0, off.width, off.height / 2, 0, 0, canvas.width, canvas.height);
+                      });
+                  })
+                  .catch(() => {
+                      canvas.outerHTML = '<div style="padding:32px; text-align:center; color:#94a3b8;">Preview unavailable</div>';
+                  });
+            });
+        });
     </script>
 </body>
 </html>
+
