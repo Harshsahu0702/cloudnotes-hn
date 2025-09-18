@@ -463,13 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Enforce Cloudinary free tier limit ~10MB for raw upload
-            const MAX_MB = 10;
-            if (file.size > MAX_MB * 1024 * 1024) {
-                e.preventDefault();
-                showNotification(`File is larger than ${MAX_MB} MB. Please upload a smaller PDF.`, 'error');
-                return;
-            }
+            // Removed client-side size limit to allow large files (100MB+)
+            // Direct upload to Cloudinary will bypass Vercel body limits
             
             // Direct client upload flow to bypass server body size limits (~5MB)
             e.preventDefault();
