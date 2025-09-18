@@ -1,5 +1,13 @@
-const Note = require('../models/noteSchema');
+const mongoose = require('mongoose');
+const noteSchema = require('../models/noteSchema');
 const { isValidObjectId } = require('../utils/helpers');
+
+// Create a dedicated connection to the PDF DB and compile the Note model
+const pdfDB = mongoose.createConnection(process.env.PDF_DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+const Note = pdfDB.model('Note', noteSchema);
 
 class NoteService {
   // Get all notes with optional filtering

@@ -2,9 +2,18 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const { v2: cloudinary } = require('cloudinary');
-const Note = require('../models/noteSchema');
+const mongoose = require('mongoose');
+const noteSchema = require('../models/noteSchema');
 const { requireAuth, validateObjectId, checkOwnership } = require('../middleware/auth');
 const { asyncHandler, apiResponse } = require('../utils/helpers');
+
+// Ensure we have a connection to the PDF DB and a compiled Note model
+// This avoids 'Note is not a constructor' (was importing a schema previously)
+const pdfDB = mongoose.createConnection(process.env.PDF_DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+const Note = pdfDB.model('Note', noteSchema);
 
 // Multer configuration
 const storage = multer.memoryStorage();

@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form validation and enhancement
     const uploadForm = document.querySelector('#upload-form');
     if (uploadForm) {
-        uploadForm.addEventListener('submit', function(e) {
+        uploadForm.addEventListener('submit', async function(e) {
             // Server will enforce auth; optionally prompt client-side if known
             if (typeof window !== 'undefined' && window.isLoggedIn === false) {
                 e.preventDefault();
@@ -463,7 +463,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // AJAX upload with fetch; stay on page and show success popup
+            // Enforce Cloudinary free tier limit ~10MB for raw upload
+            const MAX_MB = 10;
+            if (file.size > MAX_MB * 1024 * 1024) {
+                e.preventDefault();
+                showNotification(`File is larger than ${MAX_MB} MB. Please upload a smaller PDF.`, 'error');
+                return;
+            }
+            
+            // Direct client upload flow to bypass server body size limits (~5MB)
             e.preventDefault();
             const submitBtn = document.getElementById('uploadSubmitBtn') || uploadForm.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
@@ -472,36 +480,56 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.classList.add('btn-loading');
             submitBtn.setAttribute('aria-busy', 'true');
 
-            const formData = new FormData(uploadForm);
-            fetch('/upload', {
-                method: 'POST',
-                headers: { 'Accept': 'application/json' },
-                body: formData,
-                credentials: 'include'
-            })
-            .then(async (res) => {
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok || data.success === false) {
-                    throw new Error(data.message || 'Upload failed');
-                }
-                return data;
-            })
-            .then((data) => {
-                const title = data && data.data && data.data.title ? data.data.title : '';
+            try {
+                // 1) Get a signed payload for direct client upload
+                const sigRes = await fetch('/api/cloudinary/signature', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ filename: file.name })
+                });
+                const sig = await sigRes.json().catch(() => ({}));
+                if (!sigRes.ok || sig.success === false) throw new Error(sig.message || 'Failed to get upload signature');
+
+                const { cloudName, apiKey, timestamp, signature, folder, public_id } = sig;
+                if (!cloudName || !apiKey || !timestamp || !signature) throw new Error('Invalid Cloudinary signature response');
+
+                // 2) Upload directly to Cloudinary raw/upload
+                const cldForm = new FormData();
+                cldForm.append('file', file);
+                cldForm.append('api_key', apiKey);
+                cldForm.append('timestamp', timestamp);
+                cldForm.append('signature', signature);
+                cldForm.append('folder', folder);
+                cldForm.append('public_id', public_id);
+                // resource_type must be raw for PDFs; endpoint path also uses raw
+                const endpoint = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/raw/upload`;
+
+                const cldRes = await fetch(endpoint, { method: 'POST', body: cldForm });
+                const cldJson = await cldRes.json().catch(() => ({}));
+                if (!cldRes.ok || !cldJson.secure_url) throw new Error(cldJson.error?.message || 'Cloudinary upload failed');
+
+                // 3) Save note metadata to our server (small JSON only; no file body hits server)
+                const metaRes = await fetch('/api/notes/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ title: titleInput.value.trim(), fileUrl: cldJson.secure_url, fileType: file.type || 'application/pdf' })
+                });
+                const metaJson = await metaRes.json().catch(() => ({}));
+                if (!metaRes.ok || metaJson.success === false) throw new Error(metaJson.message || 'Failed to save note');
+
+                const title = (metaJson && metaJson.data && metaJson.data.title) ? metaJson.data.title : '';
                 showNotification(`${title ? '"' + title + '" ' : ''}uploaded successfully`, 'success');
-                setTimeout(() => {
-                    window.location.href = '/profile';
-                }, 1000);
-            })
-            .catch((err) => {
+                setTimeout(() => { window.location.href = '/profile'; }, 1000);
+            } catch (err) {
                 showNotification(err.message || 'Upload failed', 'error');
-            })
-            .finally(() => {
+            } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('btn-loading');
                 submitBtn.removeAttribute('aria-busy');
-            });
+            }
         });
     }
     

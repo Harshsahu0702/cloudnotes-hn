@@ -500,7 +500,6 @@ app.post('/api/cloudinary/signature', requireAuth, (req, res) => {
       timestamp,
       folder,
       public_id,
-      resource_type: 'raw',
     };
 
     const signature = cloudinary.utils.api_sign_request(
