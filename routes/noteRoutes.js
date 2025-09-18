@@ -71,13 +71,33 @@ router.post('/upload',
       });
     }
 
-    // Upload to Cloudinary
+    // Validate PDF mimetype (optional but recommended)
+    if (!/^application\/pdf$/i.test(req.file.mimetype)) {
+      return apiResponse(res, {
+        success: false,
+        message: 'Only PDF files are allowed',
+        status: 400
+      });
+    }
+
+    // Upload to Cloudinary as an image resource so we can generate page thumbnails
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          resource_type: 'raw',
+          resource_type: 'image', // PDF supported as image; enables transformations
           folder: 'pdf_uploads',
           public_id: `${Date.now()}-${req.file.originalname.replace(/\s+/g, '_')}`,
+          // Generate first-page PNG eagerly (synchronously)
+          eager: [
+            {
+              format: 'png',
+              page: 1,
+              width: 600,
+              crop: 'limit',
+              quality: 'auto'
+            }
+          ],
+          eager_async: false,
         },
         (error, uploadResult) => {
           if (error) return reject(error);
@@ -87,11 +107,17 @@ router.post('/upload',
       uploadStream.end(req.file.buffer);
     });
 
+    const pdfUrl = result.secure_url; // Original PDF URL
+    const thumbnailUrl = Array.isArray(result.eager) && result.eager[0] && result.eager[0].secure_url
+      ? result.eager[0].secure_url
+      : null;
+
     // Create note in database
     const note = new Note({
       title: req.body.title || req.file.originalname,
-      fileUrl: result.secure_url,
+      fileUrl: pdfUrl,
       fileType: req.file.mimetype,
+      thumbnailUrl: thumbnailUrl || undefined,
       uploader: req.session.user.id,
       uploaderName: req.session.user.name || req.session.user.username,
     });
@@ -101,7 +127,16 @@ router.post('/upload',
     apiResponse(res, {
       status: 201,
       message: 'File uploaded successfully',
-      data: note
+      data: {
+        _id: note._id,
+        title: note.title,
+        fileUrl: note.fileUrl,
+        thumbnailUrl: note.thumbnailUrl,
+        fileType: note.fileType,
+        uploadedAt: note.uploadedAt,
+        uploader: note.uploader,
+        uploaderName: note.uploaderName,
+      }
     });
   })
 );

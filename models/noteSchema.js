@@ -14,6 +14,10 @@ const noteSchema = new mongoose.Schema({
     type: String, // e.g., 'application/pdf'
     required: true,
   },
+  // URL of the generated thumbnail image (PNG of first page)
+  thumbnailUrl: {
+    type: String,
+  },
   uploader: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'UserLogin',
