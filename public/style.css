@@ -1244,10 +1244,18 @@ body {
 
 /* PDF List Styles */
 .pdf-list-section {
-    background: white;
+    background: url('/hero1.png') center/cover no-repeat;
     padding: 100px 0;
     min-height: 100vh;
 }
+/* Mobile devices ke liye */
+@media (max-width: 768px) {
+    .pdf-list-section {
+      background: url('/sec1.jpg') center/cover no-repeat !important;
+    }
+  }
+  
+  
 
 .pdf-list-container {
     max-width: 1000px;
