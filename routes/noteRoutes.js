@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const noteSchema = require('../models/noteSchema');
 const { requireAuth, validateObjectId, checkOwnership } = require('../middleware/auth');
 const { asyncHandler, apiResponse } = require('../utils/helpers');
+const { generatePdfThumbnailFromUrl } = require('../services/thumbnailService');
 
 // Ensure we have a connection to the PDF DB and a compiled Note model
 // This avoids 'Note is not a constructor' (was importing a schema previously)
@@ -71,7 +72,7 @@ router.post('/upload',
       });
     }
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary as raw to preserve the PDF
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -87,16 +88,28 @@ router.post('/upload',
       uploadStream.end(req.file.buffer);
     });
 
-    // Create note in database
+    // Create note first to obtain _id for thumbnail filename
     const note = new Note({
       title: req.body.title || req.file.originalname,
       fileUrl: result.secure_url,
       fileType: req.file.mimetype,
+      publicId: result.public_id,
       uploader: req.session.user.id,
       uploaderName: req.session.user.name || req.session.user.username,
     });
 
     await note.save();
+
+    // Generate local PNG thumbnail using pdf-poppler
+    try {
+      const thumbPublicPath = await generatePdfThumbnailFromUrl(note._id, note.fileUrl);
+      if (thumbPublicPath) {
+        note.thumbnailUrl = thumbPublicPath;
+        await note.save();
+      }
+    } catch (thumbErr) {
+      console.warn('[routes] Thumbnail generation failed:', thumbErr.message);
+    }
     
     apiResponse(res, {
       status: 201,
@@ -110,7 +123,7 @@ router.post('/upload',
 router.post('/create', 
   requireAuth,
   asyncHandler(async (req, res) => {
-    const { title, fileUrl, fileType } = req.body || {};
+    const { title, fileUrl, fileType, publicId } = req.body || {};
 
     if (!fileUrl || typeof fileUrl !== 'string') {
       return apiResponse(res, { success: false, status: 400, message: 'fileUrl is required' });
@@ -120,11 +133,23 @@ router.post('/create',
       title: title && String(title).trim() ? String(title).trim() : 'Untitled',
       fileUrl,
       fileType: fileType || 'application/pdf',
+      publicId: publicId || undefined,
       uploader: req.session.user.id,
       uploaderName: req.session.user.name || req.session.user.username,
     });
 
     await note.save();
+
+    // Generate local PNG thumbnail using pdf-poppler
+    try {
+      const thumbPublicPath = await generatePdfThumbnailFromUrl(note._id, note.fileUrl);
+      if (thumbPublicPath) {
+        note.thumbnailUrl = thumbPublicPath;
+        await note.save();
+      }
+    } catch (thumbErr) {
+      console.warn('[routes] Thumbnail generation failed (create):', thumbErr.message);
+    }
 
     return apiResponse(res, { status: 201, message: 'Note saved', data: note });
   })
@@ -160,12 +185,9 @@ router.get('/download/:id',
       });
     }
     
-    // Forward the request to Cloudinary
+    // Forward to the file URL (or replace with proxy logic if needed)
     const targetUrl = note.fileUrl;
-    // ... (existing download logic)
-    
-    // For now, redirect to the file URL
-    res.redirect(targetUrl);
+    return res.redirect(targetUrl);
   })
 );
 

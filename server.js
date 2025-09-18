@@ -8,6 +8,7 @@ const { v2: cloudinary } = require('cloudinary');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { generatePdfThumbnailFromUrl } = require('./services/thumbnailService');
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
@@ -543,15 +544,27 @@ app.post('/upload', requireAuth, upload.single('file'), async (req, res) => {
       uploadStream.end(req.file.buffer);
     });
 
-    // Save Cloudinary URL + metadata in MongoDB
+    // Create note first to obtain _id for thumbnail filename
     const newNote = new Note({
       title: req.body.title || req.file.originalname,
       fileUrl: result.secure_url,
       fileType: req.file.mimetype,
+      publicId: result.public_id,
       uploader: req.session.user.id,
       uploaderName: req.session.user.name || req.session.user.username,
     });
     await newNote.save();
+
+    // Generate local PNG thumbnail using pdf-poppler
+    try {
+      const thumbPublicPath = await generatePdfThumbnailFromUrl(newNote._id, newNote.fileUrl);
+      if (thumbPublicPath) {
+        newNote.thumbnailUrl = thumbPublicPath;
+        await newNote.save();
+      }
+    } catch (thumbErr) {
+      console.warn('Thumbnail generation failed:', thumbErr.message);
+    }
 
     res.json({
       success: true,

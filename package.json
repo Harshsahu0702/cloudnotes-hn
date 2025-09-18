@@ -34,6 +34,7 @@
     "nodemailer": "^7.0.6",
     "nodemon": "^3.1.10",
     "path": "^0.12.7",
+    "pdf-poppler": "^0.2.1",
     "start": "^5.1.0"
   }
 }
