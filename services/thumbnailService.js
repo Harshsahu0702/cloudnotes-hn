@@ -22,6 +22,11 @@ if (process.platform === 'win32' && process.env.POPPLER_PATH) {
 const THUMBS_DIR = path.join(process.cwd(), 'public', 'uploads', 'thumbnails');
 const PUBLIC_PREFIX = '/uploads/thumbnails';
 
+// Detect serverless platforms where writing to disk or spawning binaries is not supported
+function isServerlessEnv() {
+  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY || process.env.SERVERLESS);
+}
+
 async function ensureDirs() {
   await fsp.mkdir(THUMBS_DIR, { recursive: true });
 }
@@ -57,6 +62,11 @@ function downloadToTemp(pdfUrl) {
 }
 
 async function generatePdfThumbnailFromUrl(noteId, pdfUrl) {
+  // Skip on serverless envs
+  if (isServerlessEnv()) {
+    console.warn('[thumbnailService] Serverless environment detected; skipping local thumbnail generation');
+    return null;
+  }
   if (!pdfPoppler) {
     console.warn('[thumbnailService] pdf-poppler not available; skipping thumbnail generation');
     return null;
@@ -70,7 +80,6 @@ async function generatePdfThumbnailFromUrl(noteId, pdfUrl) {
       out_dir: THUMBS_DIR,
       out_prefix: outPrefix,
       page: 1,
-      // You can adjust density/scale for sharper thumbs (default ~150dpi). Example:
       // density: 150,
     };
 

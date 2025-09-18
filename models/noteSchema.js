@@ -14,6 +14,14 @@ const noteSchema = new mongoose.Schema({
     type: String, // e.g., 'application/pdf'
     required: true,
   },
+  // Cloudinary public_id (for cloud-generated transformations)
+  publicId: {
+    type: String,
+  },
+  // URL or path to a generated thumbnail (Cloudinary fetch URL or local /uploads/thumbnails/<id>.png)
+  thumbnailUrl: {
+    type: String,
+  },
   uploader: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'UserLogin',
