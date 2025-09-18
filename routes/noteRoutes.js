@@ -165,6 +165,60 @@ router.post('/create',
   })
 );
 
+// Create a note after client-direct Cloudinary upload using public_id
+router.post('/create-from-cloudinary', 
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const { public_id, title, fileType } = req.body || {};
+
+    if (!public_id || typeof public_id !== 'string') {
+      return apiResponse(res, { success: false, status: 400, message: 'public_id is required' });
+    }
+
+    // Build URLs deterministically from public_id (no local processing)
+    const pdfUrl = cloudinary.url(public_id, {
+      resource_type: 'image',
+      format: 'pdf',
+      secure: true,
+    });
+
+    const thumbnailUrl = cloudinary.url(`${public_id}.png`, {
+      resource_type: 'image',
+      page: 1,
+      transformation: [
+        { width: 600, crop: 'limit', quality: 'auto' }
+      ],
+      secure: true,
+    });
+
+    const note = new Note({
+      title: title && String(title).trim() ? String(title).trim() : public_id.split('/').pop(),
+      fileUrl: pdfUrl,
+      fileType: fileType || 'application/pdf',
+      thumbnailUrl,
+      uploader: req.session.user.id,
+      uploaderName: req.session.user.name || req.session.user.username,
+    });
+
+    await note.save();
+
+    return apiResponse(res, { 
+      status: 201, 
+      message: 'Note saved', 
+      data: {
+        _id: note._id,
+        title: note.title,
+        fileUrl: note.fileUrl,
+        thumbnailUrl: note.thumbnailUrl,
+        fileType: note.fileType,
+        uploadedAt: note.uploadedAt,
+        uploader: note.uploader,
+        uploaderName: note.uploaderName,
+      }
+    });
+  })
+);
+
 // Delete a note
 router.delete('/:id',
   requireAuth,
