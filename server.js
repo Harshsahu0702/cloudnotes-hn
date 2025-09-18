@@ -496,12 +496,17 @@ app.post('/api/cloudinary/signature', requireAuth, (req, res) => {
     const folder = 'pdf_uploads';
     const public_id = `${Date.now()}-${filename.replace(/\s+/g, '_')}`;
 
-    // IMPORTANT: Only sign parameters that will be sent by the client and are expected by Cloudinary
-    // Do NOT include resource_type or eager in the signed params to avoid signature mismatches
+    // Ask Cloudinary to eagerly create a first-page PNG at upload time
+    // This avoids 404 when Strict Transformations are enabled
+    const eager = 'pg_1,w_600,c_limit,q_auto,f_png';
+
+    // Only sign parameters Cloudinary expects in the signature
     const paramsToSign = {
       timestamp,
       folder,
       public_id,
+      eager,
+      eager_async: false,
     };
 
     const signature = cloudinary.utils.api_sign_request(
@@ -517,8 +522,10 @@ app.post('/api/cloudinary/signature', requireAuth, (req, res) => {
       signature,
       folder,
       public_id,
-      // Return for client usage (not part of signature)
-      resource_type: 'image'
+      // Not part of signature, but instruct the client to use image upload endpoint
+      resource_type: 'image',
+      eager,
+      eager_async: false,
     });
   } catch (err) {
     console.error('Signature generation error:', err);

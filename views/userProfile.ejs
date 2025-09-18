@@ -369,7 +369,11 @@
                 <% notes.forEach(function(note){ %>
                     <div class="pdf-card">
                         <div class="thumb-wrap">
-                            <canvas class="thumb-canvas" data-id="<%= note._id %>"></canvas>
+                            <% if (note.thumbnailUrl) { %>
+                              <img class="thumb-canvas" src="<%= note.thumbnailUrl %>" alt="<%= note.title %> preview" loading="lazy" onerror="this.outerHTML='\\u003cdiv class=\\'thumb-fallback\\'\\u003ePreview unavailable\\u003c/div\\u003e'"/>
+                            <% } else { %>
+                              <div class="thumb-fallback">Preview unavailable</div>
+                            <% } %>
                         </div>
                         <h3><%= note.title %></h3>
                         <div class="pdf-meta">
@@ -401,42 +405,6 @@
     </section>
 
     <script src="/script.js?v=<%= Date.now() %>"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script>
-        if (window.pdfjsLib) {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-        }
-        document.addEventListener('DOMContentLoaded', function(){
-            const canvases = document.querySelectorAll('.thumb-canvas');
-            if (window.pdfjsLib) {
-                canvases.forEach(async (canvas) => {
-                    const id = canvas.dataset.id;
-                    const url = `/download/${id}`;
-                    try {
-                        const res = await fetch(url);
-                        if (!res.ok) throw new Error('Fetch failed');
-                        const data = await res.arrayBuffer();
-                        const pdf = await pdfjsLib.getDocument({ data }).promise;
-                        const page = await pdf.getPage(1);
-                        const desiredWidth = 320;
-                        const viewport1x = page.getViewport({ scale: 1 });
-                        const scale = desiredWidth / viewport1x.width;
-                        const viewport = page.getViewport({ scale });
-                        const off = document.createElement('canvas');
-                        off.width = viewport.width;
-                        off.height = viewport.height;
-                        const offCtx = off.getContext('2d');
-                        await page.render({ canvasContext: offCtx, viewport }).promise;
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = viewport.width;
-                        canvas.height = Math.floor(viewport.height / 2);
-                        ctx.drawImage(off, 0, 0, off.width, off.height / 2, 0, 0, canvas.width, canvas.height);
-                    } catch (e) {
-                        canvas.outerHTML = '<div class="thumb-fallback">Preview unavailable</div>';
-                    }
-                });
-            }
-        });
-    </script>
+    <!-- Previews now use Cloudinary PNG thumbnails directly; no PDF.js needed -->
 </body>
 </html>

@@ -14,9 +14,9 @@ const noteSchema = new mongoose.Schema({
     type: String, // e.g., 'application/pdf'
     required: true,
   },
-  // URL of the generated thumbnail image (PNG of first page)
   thumbnailUrl: {
-    type: String,
+    type: String, // Cloudinary PNG preview for first page
+    default: '',
   },
   uploader: {
     type: mongoose.Schema.Types.ObjectId,

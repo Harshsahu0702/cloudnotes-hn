@@ -638,7 +638,11 @@
                     <% notes.forEach(note => { %>
                         <div class="pdf-card" data-title="<%= (note.title || '').toLowerCase() %>">
                             <div class="thumb-wrap">
-                               <canvas class="thumb-canvas" data-id="<%= note._id %>"></canvas>
+                               <% if (note.thumbnailUrl) { %>
+                                 <img class="thumb-canvas" src="<%= note.thumbnailUrl %>" alt="<%= note.title %> preview" loading="lazy" onerror="this.outerHTML='\\u003cdiv class=\\'thumb-fallback\\'\\u003ePreview unavailable\\u003c/div\\u003e'"/>
+                               <% } else { %>
+                                 <div class="thumb-fallback">Preview unavailable</div>
+                               <% } %>
                             </div>
                             <h3><%= note.title %></h3>
                             <div class="pdf-meta">
@@ -744,52 +748,6 @@
         function downloadPDF(id) {
             window.location.href = `/download/${id}`;
         }
-        
-        // Render thumbnails for cards (first page preview)
-        document.addEventListener('DOMContentLoaded', function() {
-            const canvases = document.querySelectorAll('.thumb-canvas');
-            canvases.forEach((canvas) => {
-                const id = canvas.getAttribute('data-id');
-                const url = `/download/${id}`;
-                fetch(url)
-                  .then(res => { if(!res.ok) throw new Error('Failed'); return res.arrayBuffer(); })
-                  .then(data => pdfjsLib.getDocument({ data }).promise)
-                  .then(pdf => pdf.getPage(1))
-                  .then(page => {
-                      // Responsive width based on screen size
-                      const isMobile = window.innerWidth <= 768;
-                      const isSmallMobile = window.innerWidth <= 480;
-                      let desiredWidth;
-                      if (isSmallMobile) {
-                          desiredWidth = 200;
-                      } else if (isMobile) {
-                          desiredWidth = 240;
-                      } else {
-                          desiredWidth = 320;
-                      }
-                      const viewport1x = page.getViewport({ scale: 1 });
-                      const scale = desiredWidth / viewport1x.width;
-                      const viewport = page.getViewport({ scale });
-                      
-                      // Render full page to offscreen, then copy top portion to visible canvas
-                      const off = document.createElement('canvas');
-                      off.width = viewport.width;
-                      off.height = viewport.height;
-                      const offCtx = off.getContext('2d');
-                      page.render({ canvasContext: offCtx, viewport }).promise.then(() => {
-                          const ctx = canvas.getContext('2d');
-                          // Show more content for smaller previews
-                          const heightRatio = isSmallMobile ? 0.7 : (isMobile ? 0.65 : 0.6);
-                          canvas.width = viewport.width;
-                          canvas.height = Math.floor(viewport.height * heightRatio);
-                          ctx.drawImage(off, 0, 0, off.width, off.height * heightRatio, 0, 0, canvas.width, canvas.height);
-                      });
-                  })
-                  .catch(() => {
-                      canvas.outerHTML = '<div class="thumb-fallback">Preview unavailable</div>';
-                  });
-            });
-        });
         
         // Search filter logic
         document.addEventListener('DOMContentLoaded', function() {
