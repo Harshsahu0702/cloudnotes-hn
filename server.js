@@ -496,17 +496,12 @@ app.post('/api/cloudinary/signature', requireAuth, (req, res) => {
     const folder = 'pdf_uploads';
     const public_id = `${Date.now()}-${filename.replace(/\s+/g, '_')}`;
 
-    // Eager transformation string format for signing: comma-separated params; multiple transforms separated by '|'
-    // First page PNG thumbnail, width limited to 600, auto quality
-    const eager = 'pg_1,w_600,c_limit,q_auto,f_png';
-
+    // IMPORTANT: Only sign parameters that will be sent by the client and are expected by Cloudinary
+    // Do NOT include resource_type or eager in the signed params to avoid signature mismatches
     const paramsToSign = {
       timestamp,
       folder,
       public_id,
-      resource_type: 'image', // PDFs as image to enable page transforms
-      eager,
-      eager_async: false,
     };
 
     const signature = cloudinary.utils.api_sign_request(
@@ -522,9 +517,8 @@ app.post('/api/cloudinary/signature', requireAuth, (req, res) => {
       signature,
       folder,
       public_id,
-      resource_type: 'image',
-      eager,
-      eager_async: false,
+      // Return for client usage (not part of signature)
+      resource_type: 'image'
     });
   } catch (err) {
     console.error('Signature generation error:', err);
