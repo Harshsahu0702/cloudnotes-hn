@@ -638,7 +638,7 @@
                     <% notes.forEach(note => { %>
                         <div class="pdf-card" data-title="<%= (note.title || '').toLowerCase() %>">
                             <div class="thumb-wrap">
-                                <canvas class="thumb-canvas" data-id="<%= note._id %>"></canvas>
+                               <img src="<%= note.thumbnailUrl %>" alt="Preview" class="thumb-canvas" loading="lazy">
                             </div>
                             <h3><%= note.title %></h3>
                             <div class="pdf-meta">
